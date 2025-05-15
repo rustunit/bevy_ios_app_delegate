@@ -1,0 +1,15 @@
+[package]
+name = "bevy_ios_app_delegate"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bevy_app = { version = "0.15", default-features = false }
+bevy_channel_trigger = "0.3"
+bevy_ecs = { version = "0.15", default-features = false }
+bevy_log = { version = "0.15", default-features = false }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+objc2 = "0.6"
+objc2-foundation = "0.3"
+objc2-ui-kit = "0.3.1"
