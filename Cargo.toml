@@ -2,6 +2,13 @@
 name = "bevy_ios_app_delegate"
 version = "0.1.0"
 edition = "2024"
+readme = "README.md"
+license = "MIT"
+authors = ["extrawurst <mail@rusticorn.com>"]
+documentation = "https://docs.rs/bevy_ios_app_delegate"
+repository = "https://github.com/rustunit/bevy_ios_app_delegate"
+keywords = ["bevy", "gamedev", "mobile", "ios", "objc"]
+description = "Bevy Plugin to receive iOS AppDelegate callbacks"
 
 [dependencies]
 bevy_app = { version = "0.15", default-features = false }
