@@ -14,6 +14,13 @@
 ## Features
 * trigger `AppDelegateCall::OpenURL` event if app was opened or forgrounded based on a click on a [URL schema](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app)
 
+## Usage
+
+1. Make sure your `winit` dependency is at least `0.30.10` (where winit stopped implementing `AppDelegate` itself)
+2. Add dependency `cargo add bevy_ios_app_delegate`
+3. Register plugin `app.add_plugins((IosAppDelegate));`
+4. Add observer: `app.add_observer(|trigger: Trigger<AppDelegateCall>| {});`
+
 ## Our Other Crates
 
 - [bevy_ios_iap](https://github.com/rustunit/bevy_ios_iap)
