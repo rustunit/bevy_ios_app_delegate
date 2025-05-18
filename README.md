@@ -11,6 +11,8 @@
 [sh_discord]: https://img.shields.io/discord/1176858176897953872?label=discord&color=5561E6
 [lk_discord]: https://discord.gg/rQNeEnMhus
 
+Read more about usage and examples in this [blog post](https://rustunit.com/blog/2025/05-18-bevy-ios-deep-linking/).
+
 ## Features
 * trigger `AppDelegateCall::OpenURL` event if app was opened or forgrounded based on a click on a [URL schema](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app)
 
@@ -18,7 +20,7 @@
 
 1. Make sure your `winit` dependency is at least `0.30.10` (where winit stopped implementing `AppDelegate` itself)
 2. Add dependency `cargo add bevy_ios_app_delegate`
-3. Register plugin `app.add_plugins((IosAppDelegate));`
+3. Register plugin `app.add_plugins((IosAppDelegatePlugin));`
 4. Add observer: `app.add_observer(|trigger: Trigger<AppDelegateCall>| {});`
 
 ## Our Other Crates
@@ -39,7 +41,8 @@
 
 |bevy|crate|
 |---|---|
-|0.15|0.1,main|
+|0.16|0.2,main|
+|0.15|0.1|
 
 # License
 
