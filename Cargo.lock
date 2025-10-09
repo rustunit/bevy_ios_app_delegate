@@ -166,6 +166,7 @@ dependencies = [
  "bevy_channel_trigger",
  "bevy_ecs",
  "bevy_log",
+ "block2",
  "objc2",
  "objc2-foundation",
  "objc2-ui-kit",

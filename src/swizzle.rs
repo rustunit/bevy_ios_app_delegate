@@ -1,15 +1,17 @@
 use crate::AppDelegateCall;
 use crate::channel::send_event;
 
+use block2::DynBlock;
 use objc2::{
     ClassType, MainThreadMarker, MainThreadOnly, define_class, msg_send,
     rc::{Allocated, Retained},
     runtime::{AnyObject, Imp, NSObjectProtocol, ProtocolObject, Sel},
     sel,
 };
-use objc2_foundation::{NSDictionary, NSURL};
+use objc2_foundation::{NSArray, NSDictionary, NSURL, NSUserActivity};
 use objc2_ui_kit::{
     UIApplication, UIApplicationDelegate, UIApplicationOpenURLOptionsKey, UIResponder,
+    UIUserActivityRestoring,
 };
 use std::mem;
 
@@ -34,6 +36,30 @@ define_class!(
             bevy_log::debug!("url open: {url}");
 
             send_event(AppDelegateCall::OpenURL(url));
+
+            true
+        }
+
+        #[allow(non_snake_case)]
+        #[unsafe(method(application:continueUserActivity:restorationHandler:))]
+        unsafe fn application_continueUserActivity_restorationHandler(
+            &self,
+            _application: &UIApplication,
+            user_activity: &NSUserActivity,
+            _restoration_handler: &DynBlock<
+                dyn Fn(*mut NSArray<ProtocolObject<dyn UIUserActivityRestoring>>),
+            >,
+        ) -> bool {
+            let url = unsafe {
+                user_activity
+                    .webpageURL()
+                    .unwrap()
+                    .absoluteString()
+                    .unwrap()
+                    .to_string()
+            };
+
+            bevy_log::debug!("universal link open: {url}");
 
             true
         }
