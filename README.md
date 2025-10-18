@@ -21,7 +21,7 @@ Read more about usage and examples in this [blog post](https://rustunit.com/blog
 1. Make sure your `winit` dependency is at least `0.30.10` (where winit stopped implementing `AppDelegate` itself)
 2. Add dependency `cargo add bevy_ios_app_delegate`
 3. Register plugin `app.add_plugins((IosAppDelegatePlugin));`
-4. Add observer: `app.add_observer(|trigger: Trigger<AppDelegateCall>| {});`
+4. Add observer: `app.add_observer(|trigger: On<AppDelegateCall>| {});`
 
 ## Our Other Crates
 
@@ -41,7 +41,8 @@ Read more about usage and examples in this [blog post](https://rustunit.com/blog
 
 |bevy|crate|
 |---|---|
-|0.16|0.2,main|
+|0.17|0.3,main|
+|0.16|0.2|
 |0.15|0.1|
 
 # License
