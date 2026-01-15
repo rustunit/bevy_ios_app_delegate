@@ -41,7 +41,8 @@ Read more about usage and examples in this [blog post](https://rustunit.com/blog
 
 |bevy|crate|
 |---|---|
-|0.17|0.3,main|
+|0.18|0.4,main|
+|0.17|0.3|
 |0.16|0.2|
 |0.15|0.1|
 

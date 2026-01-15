@@ -4,7 +4,7 @@ use bevy_ecs::event::Event;
 use channel::set_sender;
 
 mod channel;
-#[cfg(any(target_os = "ios"))]
+#[cfg(target_os = "ios")]
 mod swizzle;
 
 /// Event being triggered based on AppDelegate calls
@@ -26,7 +26,7 @@ impl Plugin for IosAppDelegatePlugin {
 
         set_sender(sender);
 
-        #[cfg(any(target_os = "ios"))]
+        #[cfg(target_os = "ios")]
         swizzle::swizzle();
     }
 }
