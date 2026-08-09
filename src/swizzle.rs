@@ -89,7 +89,7 @@ pub(crate) fn swizzle() {
         let original = unsafe { ORIGINAL.unwrap() };
         let this = original(this, sel);
         let app = unsafe { &*this };
-        install_global_app_delegate(&app);
+        install_global_app_delegate(app);
         this
     }
 
