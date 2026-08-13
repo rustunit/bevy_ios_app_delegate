@@ -11,13 +11,13 @@ use objc2::{
     runtime::{Imp, NSObjectProtocol, Sel},
     sel,
 };
-use objc2_foundation::{NSBundle, NSSet, ns_string};
+use objc2_foundation::{NSBundle, NSSet, NSUserActivity, ns_string};
 use objc2_ui_kit::{
     UIOpenURLContext, UIResponder, UIScene, UISceneConfiguration, UISceneConnectionOptions,
     UISceneDelegate, UISceneSession, UIWindow, UIWindowScene, UIWindowSceneDelegate,
 };
 
-use crate::swizzle::open_url;
+use crate::swizzle::{continue_user_activity, open_url};
 
 thread_local! {
     static SCENE: RefCell<Option<Retained<UIWindowScene>>> = const { RefCell::new(None) };
@@ -53,6 +53,20 @@ define_class!(
             if let Some(url_contexts) = url_contexts {
                 open_url_contexts(&url_contexts);
             }
+
+            // Likewise a universal link that cold-launches the app: with scenes, neither
+            // this nor the warm case below reaches the app delegate.
+            let activities: Option<Retained<NSSet<NSUserActivity>>> =
+                unsafe { msg_send![options, userActivities] };
+            for activity in activities.iter().flat_map(|activities| activities.iter()) {
+                continue_user_activity(&activity);
+            }
+        }
+
+        #[allow(non_snake_case)]
+        #[unsafe(method(scene:continueUserActivity:))]
+        unsafe fn scene_continueUserActivity(&self, _scene: &UIScene, activity: &NSUserActivity) {
+            continue_user_activity(activity);
         }
 
         #[allow(non_snake_case)]

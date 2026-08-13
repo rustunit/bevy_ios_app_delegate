@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   before
 * with scenes enabled, `AppDelegateCall::OpenURL` is triggered from the scene delegate, both when a
   URL launches the app and while it is running
+* `AppDelegateCall::UniversalLink`, triggered when a
+  [universal link](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app)
+  launches or foregrounds the app: from `application:continueUserActivity:restorationHandler:`
+  without scenes, and from the scene delegate with them (`connectionOptions.userActivities` on a
+  cold launch, `scene:continueUserActivity:` while running), since UIKit stops calling the app
+  delegate's version once scenes are declared
 
 ## [0.6.0] - 2026-10-19
 
