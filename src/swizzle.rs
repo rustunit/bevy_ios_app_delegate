@@ -7,9 +7,12 @@ use objc2::{
     runtime::{AnyObject, Imp, NSObjectProtocol, ProtocolObject, Sel},
     sel,
 };
-use objc2_foundation::{NSDictionary, NSURL};
+use objc2_foundation::{
+    NSArray, NSDictionary, NSURL, NSUserActivity, NSUserActivityTypeBrowsingWeb,
+};
 use objc2_ui_kit::{
     UIApplication, UIApplicationDelegate, UIApplicationOpenURLOptionsKey, UIResponder,
+    UIUserActivityRestoring,
 };
 use std::mem;
 
@@ -36,6 +39,45 @@ define_class!(
             send_event(AppDelegateCall::OpenURL(url));
 
             true
+        }
+
+        // Deprecated in favour of `UISceneDelegate`, which an app only has once it
+        // declares a `UIApplicationSceneManifest`. winit-based apps do not, so this
+        // is the call universal links actually arrive at.
+        //
+        // The restoration handler is for state restoration and is documented as
+        // optional to invoke; we never do, so the array of restorable responders
+        // stays empty.
+        #[allow(non_snake_case, deprecated)]
+        #[unsafe(method(application:continueUserActivity:restorationHandler:))]
+        unsafe fn application_continueUserActivity_restorationHandler(
+            &self,
+            _app: &UIApplication,
+            activity: &NSUserActivity,
+            _restoration_handler: &block2::DynBlock<
+                dyn Fn(*mut NSArray<ProtocolObject<dyn UIUserActivityRestoring>>),
+            >,
+        ) -> bool {
+            // Handoff and Spotlight land here too. They carry no `webpageURL`, so
+            // answering `true` for them would claim activities we did not continue.
+            let browsing =
+                &*unsafe { activity.activityType() } == unsafe { NSUserActivityTypeBrowsingWeb };
+            let url = browsing
+                .then(|| unsafe { activity.webpageURL() })
+                .flatten()
+                .and_then(|url| unsafe { url.absoluteString() })
+                .map(|url| url.to_string());
+
+            match url {
+                Some(url) => {
+                    bevy_log::debug!("universal link: {url}");
+
+                    send_event(AppDelegateCall::UniversalLink(url));
+
+                    true
+                }
+                None => false,
+            }
         }
     }
 );

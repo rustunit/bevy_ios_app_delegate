@@ -13,6 +13,16 @@ pub enum AppDelegateCall {
     /// triggered after app being opened or foregrounded based on a click on a URL schema
     /// see <https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app>
     OpenURL(String),
+    /// triggered after app being opened or foregrounded based on a click on a
+    /// [universal link](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app):
+    /// an ordinary `https://` address of a domain the app claims via its
+    /// `associated-domains` entitlement. Carries the web page URL that was
+    /// clicked, so the app can route the visitor to the same place its website
+    /// would have.
+    ///
+    /// Only browsing-web activities produce this. Handoff and Spotlight arrive at
+    /// the same delegate call with no web page URL and are dropped.
+    UniversalLink(String),
 }
 
 /// Plugin to hook into iOS app delegate calls

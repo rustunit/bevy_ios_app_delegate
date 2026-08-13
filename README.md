@@ -15,6 +15,7 @@ Read more about usage and examples in this [blog post](https://rustunit.com/blog
 
 ## Features
 * trigger `AppDelegateCall::OpenURL` event if app was opened or forgrounded based on a click on a [URL schema](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app)
+* trigger `AppDelegateCall::UniversalLink` event if app was opened or forgrounded based on a click on a [universal link](https://developer.apple.com/documentation/xcode/supporting-universal-links-in-your-app): a plain `https://` address of a domain the app claims through its `associated-domains` entitlement and an `apple-app-site-association` file served by that domain
 
 ## Usage
 
