@@ -1,5 +1,6 @@
 use crate::AppDelegateCall;
 use crate::channel::send_event;
+use crate::scene;
 
 use objc2::{
     ClassType, MainThreadMarker, MainThreadOnly, define_class, msg_send,
@@ -10,6 +11,7 @@ use objc2::{
 use objc2_foundation::{NSDictionary, NSURL};
 use objc2_ui_kit::{
     UIApplication, UIApplicationDelegate, UIApplicationOpenURLOptionsKey, UIResponder,
+    UISceneConfiguration, UISceneConnectionOptions, UISceneSession,
 };
 use std::mem;
 
@@ -29,16 +31,32 @@ define_class!(
             url: &NSURL,
             _options: &NSDictionary<UIApplicationOpenURLOptionsKey, AnyObject>,
         ) -> bool {
-            let url = unsafe { url.absoluteString().unwrap().to_string() };
-
-            bevy_log::debug!("url open: {url}");
-
-            send_event(AppDelegateCall::OpenURL(url));
+            open_url(url);
 
             true
         }
+
+        // Only asked once the app declares a `UIApplicationSceneManifest`.
+        #[allow(non_snake_case)]
+        #[unsafe(method_id(application:configurationForConnectingSceneSession:options:))]
+        unsafe fn application_configurationForConnectingSceneSession_options(
+            &self,
+            _app: &UIApplication,
+            session: &UISceneSession,
+            _options: &UISceneConnectionOptions,
+        ) -> Retained<UISceneConfiguration> {
+            scene::configuration(session)
+        }
     }
 );
+
+pub(crate) fn open_url(url: &NSURL) {
+    let url = unsafe { url.absoluteString().unwrap().to_string() };
+
+    bevy_log::debug!("url open: {url}");
+
+    send_event(AppDelegateCall::OpenURL(url));
+}
 
 define_class!(
     #[unsafe(super(UIApplication))]
