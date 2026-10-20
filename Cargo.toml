@@ -1,10 +1,9 @@
 [package]
 name = "bevy_ios_app_delegate"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 readme = "README.md"
 license = "MIT"
-authors = ["extrawurst <mail@rusticorn.com>"]
 documentation = "https://docs.rs/bevy_ios_app_delegate"
 repository = "https://github.com/rustunit/bevy_ios_app_delegate"
 keywords = ["bevy", "gamedev", "mobile", "ios", "objc"]

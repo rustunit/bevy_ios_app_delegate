@@ -6,8 +6,8 @@
 use std::{cell::RefCell, mem};
 
 use objc2::{
-    ClassType, MainThreadOnly, Message, define_class, msg_send,
-    rc::Retained,
+    ClassType, MainThreadMarker, MainThreadOnly, Message, define_class, msg_send,
+    rc::{Retained, Weak},
     runtime::{Imp, NSObjectProtocol, Sel},
     sel,
 };
@@ -21,8 +21,9 @@ use crate::swizzle::open_url;
 
 thread_local! {
     static SCENE: RefCell<Option<Retained<UIWindowScene>>> = const { RefCell::new(None) };
-    // Windows made visible before the scene connected.
-    static PENDING: RefCell<Vec<Retained<UIWindow>>> = const { RefCell::new(Vec::new()) };
+    // Every window we own the scene of: UIKit may disconnect the scene and later connect a new
+    // one, and the windows have to follow it.
+    static WINDOWS: RefCell<Vec<Weak<UIWindow>>> = const { RefCell::new(Vec::new()) };
 }
 
 define_class!(
@@ -52,6 +53,14 @@ define_class!(
             if let Some(url_contexts) = url_contexts {
                 open_url_contexts(&url_contexts);
             }
+        }
+
+        #[allow(non_snake_case)]
+        #[unsafe(method(sceneDidDisconnect:))]
+        unsafe fn sceneDidDisconnect(&self, _scene: &UIScene) {
+            SCENE.set(None);
+
+            bevy_log::debug!("scene disconnected");
         }
 
         #[allow(non_snake_case)]
@@ -93,12 +102,28 @@ pub(crate) fn configuration(session: &UISceneSession) -> Retained<UISceneConfigu
 fn connect(scene: &UIWindowScene) {
     SCENE.set(Some(scene.retain()));
 
-    for window in PENDING.take() {
+    let windows = WINDOWS.with_borrow_mut(|windows| {
+        windows.retain(|window| window.load().is_some());
+        windows.iter().filter_map(Weak::load).collect::<Vec<_>>()
+    });
+
+    for window in windows {
         unsafe { window.setWindowScene(Some(scene)) };
         window.makeKeyAndVisible();
     }
 
     bevy_log::debug!("scene connected");
+}
+
+fn track(window: &UIWindow) {
+    WINDOWS.with_borrow_mut(|windows| {
+        if !windows
+            .iter()
+            .any(|w| w.load().is_some_and(|w| std::ptr::eq(&*w, window)))
+        {
+            windows.push(Weak::new(window));
+        }
+    });
 }
 
 /// winit's `initWithFrame:` window lands on UIKit's delegate-less, screen-based fallback scene,
@@ -124,19 +149,21 @@ pub(crate) fn swizzle() {
         let window = unsafe { &*this };
 
         if needs_scene(window) {
+            track(window);
+
             match SCENE.with_borrow(Clone::clone) {
                 Some(scene) => unsafe { window.setWindowScene(Some(&scene)) },
-                None => PENDING.with_borrow_mut(|pending| {
-                    if !pending.iter().any(|w| std::ptr::eq(&**w, window)) {
-                        pending.push(window.retain());
-                    }
-                }),
+                // Keep it hidden: showing a sceneless window is a UIKit warning, and `connect`
+                // makes it key and visible once there is a scene.
+                None => return,
             }
         }
 
         let original = unsafe { ORIGINAL.unwrap() };
         original(this, sel);
     }
+
+    let _mtm = MainThreadMarker::new().expect("scene::swizzle must be called on the main thread");
 
     let method = UIWindow::class()
         .instance_method(sel!(makeKeyAndVisible))
