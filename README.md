@@ -15,6 +15,7 @@ Read more about usage and examples in this [blog post](https://rustunit.com/blog
 
 ## Features
 * trigger `AppDelegateCall::OpenURL` event if app was opened or forgrounded based on a click on a [URL schema](https://developer.apple.com/documentation/xcode/defining-a-custom-url-scheme-for-your-app)
+* UIScene life cycle support: apps built with the iOS 27 SDK must adopt it or fail to launch, which winit does not do yet ([winit#4224](https://github.com/rust-windowing/winit/issues/4224))
 
 ## Usage
 
@@ -22,6 +23,19 @@ Read more about usage and examples in this [blog post](https://rustunit.com/blog
 2. Add dependency `cargo add bevy_ios_app_delegate`
 3. Register plugin `app.add_plugins((IosAppDelegatePlugin));`
 4. Add observer: `app.add_observer(|trigger: On<AppDelegateCall>| {});`
+
+### UIScene life cycle
+
+Add this to your `Info.plist` to opt in. The plugin then provides the scene delegate (no
+`UISceneConfigurations` needed) and moves winit's window onto the scene:
+
+```xml
+<key>UIApplicationSceneManifest</key>
+<dict>
+    <key>UIApplicationSupportsMultipleScenes</key>
+    <false/>
+</dict>
+```
 
 ## Our Other Crates
 

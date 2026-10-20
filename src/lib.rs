@@ -5,6 +5,8 @@ use channel::set_sender;
 
 mod channel;
 #[cfg(target_os = "ios")]
+mod scene;
+#[cfg(target_os = "ios")]
 mod swizzle;
 
 /// Event being triggered based on AppDelegate calls
@@ -17,6 +19,7 @@ pub enum AppDelegateCall {
 
 /// Plugin to hook into iOS app delegate calls
 /// It will use swizzling to hook into UIApplication init to register our custom AppDelegate as soon as winit starts the UIKit initialization procedure
+/// If the app's `Info.plist` declares a `UIApplicationSceneManifest`, it also adopts the UIScene life cycle (required by the iOS 27 SDK)
 /// This only takes effect on ios builds
 pub struct IosAppDelegatePlugin;
 
@@ -27,6 +30,12 @@ impl Plugin for IosAppDelegatePlugin {
         set_sender(sender);
 
         #[cfg(target_os = "ios")]
-        swizzle::swizzle();
+        {
+            swizzle::swizzle();
+
+            if scene::enabled() {
+                scene::swizzle();
+            }
+        }
     }
 }
